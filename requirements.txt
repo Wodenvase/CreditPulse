@@ -1,0 +1,11 @@
+Pandas
+Polars
+NumPy
+Streamlit
+n8n
+openai
+networkx
+scikit-learn
+matplotlib
+seaborn
+requests
