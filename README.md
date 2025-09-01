@@ -27,9 +27,17 @@ To set up the project, follow these steps:
 
 ## Usage
 
-To run the Streamlit dashboard, execute the following command:
+To launch your Streamlit dashboard, open your terminal and run:
+
 ```
-streamlit run src/dashboard/app.py
+cd /Users/dipantabhattacharyya/creditplus/CreditPulse/src/dashboard
+streamlit run app.py
+```
+
+Alternatively, from the `src` directory, you can run:
+
+```
+PYTHONPATH=. streamlit run dashboard/app.py
 ```
 
 ## Contributing
