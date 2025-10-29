@@ -1,0 +1,7 @@
+bond,sector,duration,convexity,var,expectedshortfall,issuer
+ACME2025,Technology,3.5,12.5,1000,1500,Acme Corp
+XYZ2030,Healthcare,5.2,25.8,1200,1800,XYZ Inc
+ABC2027,Finance,4.1,18.3,800,1200,ABC Bank
+DEF2026,Energy,3.8,15.2,1100,1650,DEF Oil
+GHI2029,Technology,4.9,22.1,950,1425,GHI Tech
+JKL2028,Healthcare,4.3,19.7,1050,1575,JKL Pharma

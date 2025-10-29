@@ -7,13 +7,17 @@ def fetch_bond_data(bond_ticker):
     Simulate pulling bond data from an API or database.
     """
     # Placeholder: Replace with real API/database call
+    import numpy as np
     sample_data = {
         "bond_id": bond_ticker,
         "issuer": "Acme Corp",
         "sector": "Technology",
         "rating": "A",
         "yield": 5.2,
-        "spread": 120
+        "spread": 120,
+        "cash_flows": [5, 5, 105],
+        "spread_history": list(np.random.normal(120, 10, 30)),  # 30 historical spread values
+        "latest_spread": 125
     }
     return sample_data
 

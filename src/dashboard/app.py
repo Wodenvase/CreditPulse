@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 from bond_analytics import calculate_duration, calculate_convexity
 from rag_ai import retrieve_insights
 from n8n_automation import fetch_bond_data
