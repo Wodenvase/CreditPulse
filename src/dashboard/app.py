@@ -1,20 +1,73 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from bond_analytics import calculate_duration, calculate_convexity
-from rag_ai import retrieve_insights
-from n8n_automation import fetch_bond_data
-from knowledge_graph import build_relationships, visualize_knowledge_graph
-from bond_analytics.portfolio import Portfolio
-from bond_analytics.alerts import SmartAlert
-from knowledge_graph.event_correlation import EventCorrelationEngine
-from bond_analytics.liquidity import calculate_liquidity_metrics
 import os
-from pyvis.network import Network
-import streamlit.components.v1 as components
+import sys
 import networkx as nx
-from bond_analytics.macro_api import MacroAPI
-from bond_analytics.scenarios import apply_scenario, PREBUILT_SCENARIOS
+import streamlit.components.v1 as components
+
+# Add the src directory to the Python path for imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+
+# Import modules with comprehensive error handling
+import_errors = []
+
+try:
+    from pyvis.network import Network
+    PYVIS_AVAILABLE = True
+except ImportError as e:
+    PYVIS_AVAILABLE = False
+    import_errors.append(f"PyVis: {e}")
+
+try:
+    from bond_analytics import calculate_duration, calculate_convexity
+    BOND_ANALYTICS_AVAILABLE = True
+except ImportError as e:
+    BOND_ANALYTICS_AVAILABLE = False
+    import_errors.append(f"Bond Analytics: {e}")
+
+try:
+    from rag_ai import retrieve_insights
+    RAG_AI_AVAILABLE = True
+except ImportError as e:
+    RAG_AI_AVAILABLE = False
+    import_errors.append(f"RAG AI: {e}")
+
+try:
+    from n8n_automation import fetch_bond_data
+    N8N_AVAILABLE = True
+except ImportError as e:
+    N8N_AVAILABLE = False
+    import_errors.append(f"N8N Automation: {e}")
+
+try:
+    from knowledge_graph import build_relationships, visualize_knowledge_graph
+    from knowledge_graph.event_correlation import EventCorrelationEngine
+    KNOWLEDGE_GRAPH_AVAILABLE = True
+except ImportError as e:
+    KNOWLEDGE_GRAPH_AVAILABLE = False
+    import_errors.append(f"Knowledge Graph: {e}")
+
+try:
+    from bond_analytics.portfolio import Portfolio
+    from bond_analytics.alerts import SmartAlert
+    from bond_analytics.liquidity import calculate_liquidity_metrics
+    from bond_analytics.macro_api import MacroAPI
+    from bond_analytics.scenarios import apply_scenario, PREBUILT_SCENARIOS
+    ADVANCED_ANALYTICS_AVAILABLE = True
+except ImportError as e:
+    ADVANCED_ANALYTICS_AVAILABLE = False
+    import_errors.append(f"Advanced Analytics: {e}")
+
+# Display import status
+if import_errors:
+    with st.sidebar:
+        st.warning("⚠️ Some modules could not be imported:")
+        for error in import_errors:
+            st.text(f"• {error}")
+        st.info("Some features may be limited. Check requirements.txt and installation.")
 
 def main():
     st.title("CreditPulse Dashboard")
@@ -41,28 +94,50 @@ def main():
 
     if bond_ticker:
         # Fetch bond data
-        bond_data = fetch_bond_data(bond_ticker)
+        if N8N_AVAILABLE:
+            bond_data = fetch_bond_data(bond_ticker)
+        else:
+            # Fallback: Create sample bond data
+            bond_data = {
+                "bond_id": bond_ticker,
+                "issuer": "Sample Corp",
+                "sector": "Technology",
+                "rating": "A",
+                "yield": 4.5,
+                "spread": 85,
+                "cash_flows": [5, 5, 105],
+                "spread_history": [80, 82, 79, 85, 87, 84, 86, 83, 88, 85],
+                "latest_spread": 85
+            }
+            st.info("Using sample data - n8n_automation module not available")
 
         if bond_data is not None:
             st.subheader("Bond Data")
             st.write(bond_data)
 
             # Calculate analytics
-            duration = calculate_duration(bond_data, discount_rate)
-            convexity = calculate_convexity(bond_data)
+            if BOND_ANALYTICS_AVAILABLE:
+                duration = calculate_duration(bond_data, discount_rate)
+                convexity = calculate_convexity(bond_data)
 
-            st.subheader("Bond Analytics")
-            st.write(f"**Duration:** {duration}")
-            st.write(f"**Convexity:** {convexity}")
+                st.subheader("Bond Analytics")
+                st.write(f"**Duration:** {duration}")
+                st.write(f"**Convexity:** {convexity}")
+            else:
+                st.warning("Bond analytics calculations not available - bond_analytics module missing")
 
             # Predictive analytics and risk alerts
-            insights = retrieve_insights(bond_data)
-            st.subheader("AI Insights")
-            if isinstance(insights, list):
-                for insight in insights:
-                    st.info(insight)
+            if RAG_AI_AVAILABLE:
+                insights = retrieve_insights(bond_data)
+                st.subheader("AI Insights")
+                if isinstance(insights, list):
+                    for insight in insights:
+                        st.info(insight)
+                else:
+                    st.info(insights)
             else:
-                st.info(insights)
+                st.subheader("AI Insights")
+                st.info("AI insights not available - rag_ai module missing")
 
             # Stress testing
             st.subheader("Stress Testing Results")
@@ -72,11 +147,15 @@ def main():
             # Knowledge graph visualization
             st.subheader("Knowledge Graph Relationships")
             st.markdown("Visualizes how the bond's issuer, sector, and rating are interconnected. Useful for contagion analysis.")
-            relationships = build_relationships(bond_data)
-            visualize_knowledge_graph(relationships)
+            if KNOWLEDGE_GRAPH_AVAILABLE:
+                relationships = build_relationships(bond_data)
+                visualize_knowledge_graph(relationships)
+            else:
+                st.warning("Knowledge graph visualization not available - knowledge_graph module missing")
+                st.info("Install required dependencies: pip install networkx matplotlib")
 
             # Smart Alerts 2.0
-            if n8n_webhook_url:
+            if n8n_webhook_url and ADVANCED_ANALYTICS_AVAILABLE:
                 # Extract spread history and latest spread robustly
                 spread_history = bond_data.get('spread_history')
                 latest_spread = bond_data.get('latest_spread')
@@ -95,6 +174,8 @@ def main():
                         st.success(f"No abnormal spread move detected (Z-score: {z_score:.2f})")
                 else:
                     st.info("Spread history or latest spread data is missing or invalid for this bond.")
+            elif n8n_webhook_url and not ADVANCED_ANALYTICS_AVAILABLE:
+                st.warning("Smart Alerts not available - advanced analytics modules missing")
         else:
             st.warning("No data found for this bond ticker.")
     else:
